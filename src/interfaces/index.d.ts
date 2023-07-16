@@ -4,7 +4,7 @@ import { JwtPayload } from "jsonwebtoken";
 declare global {
   namespace Express {
     interface Request {
-      userId: JwtPayload | null;
+      userId: string | null;
     }
   }
 }
