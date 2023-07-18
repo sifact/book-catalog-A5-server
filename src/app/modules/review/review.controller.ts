@@ -1,11 +1,12 @@
 import { RequestHandler } from "express";
-import Review from "./review.model.js";
+import Review from "./review.model";
 
 export const createReview: RequestHandler = async (req, res, next) => {
   try {
     const newReview = new Review({
       userId: req.userId,
-      ...req.body,
+      review: req.body.review,
+      bookId: req.body.id,
     });
 
     const savedReview = await newReview.save();
@@ -31,7 +32,7 @@ export const createReview: RequestHandler = async (req, res, next) => {
 export const getReviews: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const reviews = await Review.find({ id });
+    const reviews = await Review.find({ bookId: id }).populate("userId");
 
     res.status(200).send(reviews);
   } catch (err) {

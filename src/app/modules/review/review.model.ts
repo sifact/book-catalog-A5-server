@@ -10,7 +10,7 @@ const reviewSchema = new Schema(
     },
     bookId: {
       type: String,
-      ref: "Books",
+      ref: "Book",
       required: true,
     },
     review: {
