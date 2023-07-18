@@ -27,6 +27,10 @@ const bookSchema = new Schema(
       type: String,
       required: true,
     },
+    year: {
+      type: String,
+      required: true,
+    },
     userId: {
       type: String,
       ref: "User",
@@ -38,4 +42,6 @@ const bookSchema = new Schema(
   }
 );
 
-export default mongoose.model("book", bookSchema);
+const Book = mongoose.model("Book", bookSchema);
+
+export default Book;

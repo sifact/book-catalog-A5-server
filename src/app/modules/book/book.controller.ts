@@ -1,14 +1,19 @@
 import { RequestHandler } from "express";
 import Book from "./book.model";
 import ApiError from "../../../errors/ApiError";
-import { JwtPayload } from "jsonwebtoken";
+
+import pick from "../../../shared/pick";
 
 export const createBook: RequestHandler = async (req, res, next) => {
+  const year = req.body.publishedDate.slice(-4);
+
   const newBook = new Book({
     userId: req.userId,
     ...req.body,
+    year: year,
   });
 
+  console.log(year);
   try {
     const savedBook = await newBook.save();
     res.status(201).json(savedBook);
@@ -41,20 +46,38 @@ export const getBook: RequestHandler = async (req, res, next) => {
 };
 
 export const getBooks: RequestHandler = async (req, res, next) => {
-  const q = req.query;
-  const filters = {
-    // ...(q.userId && { userId: q.userId }),
-    // ...(q.cat && { cat: q.cat }),
-    // ...((q.min || q.max) && {
-    //   price: {
-    //     ...(q.min && { $gt: q.min }),
-    //     ...(q.max && { $lt: q.max }),
-    //   },
-    // }),
-    // ...(q.search && { title: { $regex: q.search, $options: "i" } }),
-  };
+  const filters = pick(req.query, ["search", "genre", "year"]);
+
+  const { search, ...filtersData } = filters;
+  const bookSearchableFields = ["title", "author", "genre"];
+
+  const andConditions = [];
+
+  // searching
+  if (search) {
+    andConditions.push({
+      $or: bookSearchableFields.map((field) => ({
+        [field]: {
+          $regex: search,
+          $options: "i",
+        },
+      })),
+    });
+  }
+  // filtering
+  if (Object.keys(filtersData).length) {
+    andConditions.push({
+      $and: Object.entries(filtersData).map(([field, value]) => ({
+        [field]: value,
+      })),
+    });
+  }
+
+  const whereConditions =
+    andConditions.length > 0 ? { $and: andConditions } : {};
+
   try {
-    const books = await Book.find(filters).sort();
+    const books = await Book.find(whereConditions).sort("-1");
     res.status(200).send(books);
   } catch (err) {
     next(err);
