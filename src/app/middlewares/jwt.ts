@@ -9,7 +9,7 @@ export const verifyToken = (
   next: NextFunction
 ) => {
   const token = req.cookies.accessToken;
-  console.log(token);
+
   if (!token) throw new ApiError(401, "You are not authenticated!");
 
   jwt.verify(token, config.jwt_key!, async (err: any, payload: any) => {

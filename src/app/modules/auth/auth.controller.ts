@@ -39,6 +39,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     res
       .cookie("accessToken", token, {
         httpOnly: true,
+        secure: true,
+        sameSite: "none",
       })
       .status(200)
       .send(user);

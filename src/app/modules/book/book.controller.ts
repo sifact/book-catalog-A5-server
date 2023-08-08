@@ -13,7 +13,6 @@ export const createBook: RequestHandler = async (req, res, next) => {
     year: year,
   });
 
-  console.log(year);
   try {
     const savedBook = await newBook.save();
     res.status(201).json(savedBook);
@@ -23,6 +22,7 @@ export const createBook: RequestHandler = async (req, res, next) => {
 };
 export const deleteBook: RequestHandler = async (req, res, next) => {
   try {
+    console.log(req.params.id);
     const book = await Book.findById(req.params.id);
 
     if (!book) throw new ApiError(400, "Book doesn't exist");
@@ -31,7 +31,7 @@ export const deleteBook: RequestHandler = async (req, res, next) => {
       throw new ApiError(403, "You can delete only your book!");
 
     await Book.findByIdAndDelete(req.params.id);
-    res.status(200).send("Book has been deleted!");
+    res.status(200).json("Book has been deleted!");
   } catch (err) {
     next(err);
   }
@@ -78,7 +78,7 @@ export const getBooks: RequestHandler = async (req, res, next) => {
     andConditions.length > 0 ? { $and: andConditions } : {};
 
   try {
-    const books = await Book.find(whereConditions).sort("-1");
+    const books = await Book.find(whereConditions).sort({ createdAt: -1 });
     res.status(200).send(books);
   } catch (err) {
     next(err);
